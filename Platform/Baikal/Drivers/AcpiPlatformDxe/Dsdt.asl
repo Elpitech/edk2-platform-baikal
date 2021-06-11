@@ -326,7 +326,7 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
         Package() {
           Package() { "compatible", Package() { "baikal,pcie-m", "snps,dw-pcie" } },
           Package() { "baikal,pcie-lcru", Package() { ^LCRU, Zero } },
-#if defined (BE_MBM10) || defined (BE_MBM20)
+#if defined (BE_MBM10) || defined (BE_MBM20) || defined (BE_MITX)
           Package() { "reset-gpios", Package() { ^GPIO.GPIP, 6, One } },
 #endif
           Package() { "num-lanes", 4 },
@@ -387,7 +387,7 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
         Package() {
           Package() { "compatible", Package() { "baikal,pcie-m", "snps,dw-pcie" } },
           Package() { "baikal,pcie-lcru", Package() { ^LCRU, 2 } },
-#if defined (BE_MBM10) || defined (BE_MBM20)
+#if defined (BE_MBM10) || defined (BE_MBM20) || defined (BE_MITX)
           Package() { "reset-gpios", Package() { ^GPIO.GPIP, 3, One } },
 #endif
           Package() { "num-lanes", 8 },
@@ -480,7 +480,7 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
           Package() {
             Package() { "reg", Zero },
             Package() { "snps,nr-gpios", 32 },
-#if defined (BE_MBM10) || defined (BE_MBM20)
+#if defined (BE_MBM10) || defined (BE_MBM20) || defined (BE_MITX)
             Package() { "line-name", "pcie-x8-clock" },
             Package() { "gpio-hog", One },
             Package() { "gpios", Package() { One, One } },
@@ -529,7 +529,7 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
           }
         })
       }
-#elif defined (BE_MBM10) || defined (BE_MBM20)
+#elif defined (BE_MBM10) || defined (BE_MBM20) || defined (BE_MITX)
           Package() { "cs-gpios", Zero }
         }
       })
@@ -553,7 +553,7 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
         Package() {
           Package() { "compatible", "snps,designware-i2s" },
           Package() { "system-clock-frequency", 12000000 },
-#if defined (BE_MBM10) || defined (BE_MBM20)
+#if defined (BE_MBM10) || defined (BE_MBM20) || defined (BE_MITX)
           Package() { "#sound-dai-cells", Zero }
 #elif defined(BE_DBM)
           Package() { "sound-dai", ^I2C0.PR18 }
@@ -617,7 +617,7 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
         }
       })
 
-#if defined (BE_MBM10) || defined (BE_MBM20)
+#if defined (BE_MBM10) || defined (BE_MBM20) || defined (BE_MITX)
       Device(PR08) {
         Name(_HID, "PRP0001")
         Name(_UID, 0x20250008)
@@ -976,7 +976,7 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
     }
 #endif
 
-#if defined(BE_DBM)
+#if defined(BE_DBM) || (defined (BE_MITX) && BOARD_VER == 2)
 /**************************
  * Baikal driver need fix *
  **************************/
@@ -1393,7 +1393,7 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
     }
 #endif
 
-#if defined (BE_MBM10) || defined (BE_MBM20)
+#if defined (BE_MBM10) || defined (BE_MBM20) || defined (BE_MITX)
 /*************************
  * DT-only driver device *
  *************************/
@@ -1417,10 +1417,10 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
           Package() { "local-mac-address", Package() { Zero, Zero, Zero, Zero, Zero, Zero } },
           Package() { "phy-mode", "rgmii-id" },
           Package() { "phy-handle", MDIO.GPHY },
-#ifdef BE_MBM10
+#if defined (BE_MBM10) || (defined (BE_MITX) && BOARD_VER==0)
           Package() { "snps,reset-gp-out", One },
           Package() { "snps,reset-active-low", One },
-#elif defined (BE_MBM20)
+#elif defined (BE_MBM20) || (defined (BE_MITX) && BOARD_VER==2)
           Package() { "snps,reset-gpios", Package() { ^GPIO.GPIP, 19, One } },
 #endif
           Package() { "snps,reset-delays-us", Package() { Zero, 10200, 1000 } }
@@ -1479,10 +1479,10 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
           Package() { "local-mac-address", Package() { Zero, Zero, Zero, Zero, Zero, Zero } },
           Package() { "phy-mode", "rgmii-id" },
           Package() { "phy-handle", MDIO.GPHY },
-#ifdef BE_MBM10
+#if defined (BE_MBM10) || (defined (BE_MITX) && BOARD_VER==0)
           Package() { "snps,reset-gp-out", One },
           Package() { "snps,reset-active-low", One },
-#elif defined (BE_MBM20)
+#elif defined (BE_MBM20) || (defined (BE_MITX) && BOARD_VER==2)
           Package() { "snps,reset-gpios", Package() { ^GPIO.GPIP, 20, One } },
 #endif
           Package() { "snps,reset-delays-us", Package() { Zero, 10200, 1000 } }
@@ -1794,7 +1794,7 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
     }
 #endif
 
-#if defined (BE_MBM10) || defined (BE_MBM20)
+#if defined (BE_MBM10) || defined (BE_MBM20) || defined (BE_MITX)
 /*************************
  * DT-only driver device *
  *************************/
@@ -1820,7 +1820,7 @@ DefinitionBlock("Dsdt.aml", "DSDT", 2, "BAIKAL", "BKLEDSDT", 1) {
           Package() { "simple-audio-card,hp-det-gpio", Package() {
 #ifdef BE_MBM10
             ^GPIO.GPIP, 27, Zero
-#elif defined (BE_MBM20)
+#elif defined (BE_MBM20) || defined (BE_MITX)
             ^GPIO.GPIP, 29, Zero
 #endif
           }},
