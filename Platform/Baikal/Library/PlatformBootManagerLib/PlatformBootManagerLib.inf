@@ -21,6 +21,7 @@
   MdeModulePkg/MdeModulePkg.dec
   MdePkg/MdePkg.dec
   ShellPkg/ShellPkg.dec
+  Platform/Baikal/Baikal.dec
 
 [LibraryClasses]
   BootLogoLib
@@ -37,6 +38,7 @@
 
 [Pcd]
   gEfiMdePkgTokenSpaceGuid.PcdPlatformBootTimeOut
+  gBaikalTokenSpaceGuid.PcdPs2MuxI2cBaseAddr                     ## CONSUMES
 
 [Guids]
   gEdkiiNonDiscoverableEhciDeviceGuid
@@ -45,6 +47,7 @@
   gEfiEndOfDxeEventGroupGuid
   gEfiTtyTermGuid
   gUefiShellFileGuid
+  gBaikalNonDiscoverableI2cMasterGuid
 
 [Protocols]
   gEdkiiNonDiscoverableDeviceProtocolGuid

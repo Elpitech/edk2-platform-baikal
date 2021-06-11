@@ -94,6 +94,59 @@ STATIC PLATFORM_USB_KEYBOARD  mUsbKeyboard = {
   }
 };
 
+#pragma pack (1)
+typedef struct {
+  EFI_DEVICE_PATH_PROTOCOL Header;
+  EFI_GUID                 Guid;
+  UINTN                    BaseAddress;
+} PLATFORM_I2C_CONTROLLER;
+
+typedef struct {
+  PLATFORM_I2C_CONTROLLER  I2cControllerDxe;
+  VENDOR_DEVICE_PATH       Device;
+  EFI_DEVICE_PATH_PROTOCOL End;
+} PLATFORM_I2C_DEVICE;
+#pragma pack ()
+
+#define BAIKAL_I2C_DXE_FILE_GUID { \
+          0x37BA03D6, 0xFBB2, 0x4843, \
+          { 0x85, 0xDD, 0xFE, 0x6D, 0x5D, 0xC9, 0x4D, 0xC6 } \
+          }
+
+#define PS2MUX_DEV_GUID { \
+          0x8B3D66E3, 0x5400, 0x4003, \
+          { 0x8D, 0x7E, 0x50, 0x4C, 0x59, 0xB4, 0xB4, 0xF2 } \
+          }
+
+STATIC PLATFORM_I2C_DEVICE mPs2Mux = {
+  //
+  // PLATFORM_I2C_CONTROLLER I2cControllerDxe
+  //
+  {
+    { HARDWARE_DEVICE_PATH, HW_VENDOR_DP, DP_NODE_LEN (PLATFORM_I2C_CONTROLLER) },
+    BAIKAL_I2C_DXE_FILE_GUID
+    //
+    // BaseAddress to be filled in dynamically
+    //
+  },
+
+  //
+  // VENDOR_DEVICE_PATH Device
+  //
+  {
+    { HARDWARE_DEVICE_PATH, HW_VENDOR_DP, DP_NODE_LEN (VENDOR_DEVICE_PATH) },
+    PS2MUX_DEV_GUID
+  },
+
+  //
+  // EFI_DEVICE_PATH_PROTOCOL End
+  //
+  {
+    END_DEVICE_PATH_TYPE, END_ENTIRE_DEVICE_PATH_SUBTYPE,
+    DP_NODE_LEN (EFI_DEVICE_PATH_PROTOCOL)
+  }
+};
+
 /**
   Check if the handle satisfies a particular condition.
 
@@ -272,6 +325,35 @@ IsUsbHost (
 }
 
 /**
+  This FILTER_FUNCTION checks if a handle corresponds to a non-discoverable
+  I2C host controller.
+**/
+STATIC
+BOOLEAN
+EFIAPI
+IsI2cMaster (
+  IN EFI_HANDLE   Handle,
+  IN CONST CHAR16 *ReportText
+  )
+{
+  NON_DISCOVERABLE_DEVICE   *Device;
+  EFI_STATUS                Status;
+
+  Status = gBS->HandleProtocol (Handle,
+                  &gEdkiiNonDiscoverableDeviceProtocolGuid,
+                  (VOID **)&Device);
+  if (EFI_ERROR (Status)) {
+    return FALSE;
+  }
+
+  DEBUG((EFI_D_INFO, "%a: Device->Type = %g\n", __FUNCTION__, Device->Type));
+  if (CompareGuid (Device->Type, &gBaikalNonDiscoverableI2cMasterGuid)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
   This CALLBACK_FUNCTION attempts to connect a handle non-recursively, asking
   the matching driver to produce all first-level child handles.
 **/
@@ -298,6 +380,29 @@ Connect (
     ReportText,
     Status
     ));
+}
+
+/**
+  Similar to the above, but do connect recursively.
+**/
+STATIC
+VOID
+EFIAPI
+ConnectAll (
+  IN EFI_HANDLE   Handle,
+  IN CONST CHAR16 *ReportText
+  )
+{
+  EFI_STATUS Status;
+
+  Status = gBS->ConnectController (
+                  Handle, // ControllerHandle
+                  NULL,   // DriverImageHandle
+                  NULL,   // RemainingDevicePath -- produce all children
+                  TRUE    // Recursive
+                  );
+  DEBUG ((EFI_ERROR (Status) ? EFI_D_ERROR : EFI_D_INFO, "%a: %s: %r\n",
+    __FUNCTION__, ReportText, Status));
 }
 
 /**
@@ -664,6 +769,15 @@ PlatformBootManagerBeforeConsole (
   //
   EfiBootManagerUpdateConsoleVariable (
     ConIn, (EFI_DEVICE_PATH_PROTOCOL *) &mUsbKeyboard, NULL);
+
+  FilterAndProcess (&gEdkiiNonDiscoverableDeviceProtocolGuid, IsI2cMaster, ConnectAll);
+
+  //
+  // Add the hardcoded PS/2 multiplexer device path to ConIn.
+  //
+  mPs2Mux.I2cControllerDxe.BaseAddress = PcdGet32(PcdPs2MuxI2cBaseAddr);
+  EfiBootManagerUpdateConsoleVariable (ConIn,
+    (EFI_DEVICE_PATH_PROTOCOL *)&mPs2Mux, NULL);
 
   //
   // Add the hardcoded serial console device path to ConIn, ConOut, ErrOut.
