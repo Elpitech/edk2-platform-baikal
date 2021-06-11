@@ -38,6 +38,9 @@
 !elseif $(BE_DBM)
   *_*_*_CC_FLAGS = -DBE_DBM
   *_*_*_ASLPP_FLAGS = -DBE_DBM
+!elseif $(BE_MITX)
+  *_*_*_CC_FLAGS = -DBE_MITX -DBOARD_VER=$(BOARD_VER)
+  *_*_*_ASLPP_FLAGS = -DBE_MITX
 !endif
 
 [BuildOptions.AARCH64.EDKII.DXE_CORE, BuildOptions.AARCH64.EDKII.DXE_DRIVER, BuildOptions.AARCH64.EDKII.UEFI_DRIVER, BuildOptions.AARCH64.EDKII.UEFI_APPLICATION]
@@ -100,7 +103,7 @@
   PrePiHobListPointerLib|ArmPlatformPkg/Library/PrePiHobListPointerLib/PrePiHobListPointerLib.inf
   PrePiLib|EmbeddedPkg/Library/PrePiLib/PrePiLib.inf
   PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
-!if ($(BE_QEMU_M) == FALSE) AND ($(BE_QEMU_S) == FALSE)
+!if ($(BE_QEMU_M) == FALSE) AND ($(BE_QEMU_S) == FALSE) AND ($(BE_MITX) == FALSE)
   RealTimeClockLib|Platform/Baikal/Library/BaikalRtcLib/BaikalRtcLib.inf
 !else
   RealTimeClockLib|EmbeddedPkg/Library/TemplateRealTimeClockLib/TemplateRealTimeClockLib.inf
