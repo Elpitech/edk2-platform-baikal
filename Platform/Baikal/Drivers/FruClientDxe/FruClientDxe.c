@@ -17,6 +17,8 @@
 
 #define MULTIRECORD_TYPEID_MAC0  0xC0
 #define MULTIRECORD_TYPEID_MAC1  0xC6
+#define MULTIRECORD_TYPEID_MAC2  0xC7
+#define MULTIRECORD_TYPEID_MACN  0xC8
 
 STATIC
 UINTN
@@ -537,9 +539,9 @@ FruClientGetMultirecordMacAddr (
 {
   CONST UINT8         *MrecArea;
   MULTIRECORD_HEADER   MrecHdr;
+  UINTN                MrecType;
   EFI_STATUS           Status;
 
-  ASSERT (MacAddrIdx < 2);
   ASSERT (MacAddr != NULL);
 
   if (mFruBufSize != EEPROM_SIZE) {
@@ -551,34 +553,45 @@ FruClientGetMultirecordMacAddr (
     return Status;
   }
 
+  if (MacAddrIdx == 0) {
+    MrecType = MULTIRECORD_TYPEID_MAC0;
+  } else if (MacAddrIdx == 1) {
+    MrecType = MULTIRECORD_TYPEID_MAC1;
+  } else if (MacAddrIdx == 2) {
+    MrecType = MULTIRECORD_TYPEID_MAC2;
+  } else {
+    MrecType = MULTIRECORD_TYPEID_MACN;
+  }
+
   while (FruInternalsMultirecordParseHeader (
            MrecArea,
            (mFruBuf + mFruBufSize) - MrecArea,
            &MrecHdr
            ) == EFI_SUCCESS) {
-    if ((MacAddrIdx == 0 && MrecHdr.TypeId == MULTIRECORD_TYPEID_MAC0) ||
-        (MacAddrIdx == 1 && MrecHdr.TypeId == MULTIRECORD_TYPEID_MAC1)) {
+    if (MrecHdr.TypeId == MrecType) {
       if (FruInternalsMultirecordCheckData (MrecArea,
                                             (mFruBuf + mFruBufSize) - MrecArea,
                                             &MrecHdr
                                             ) == EFI_SUCCESS) {
-        if (MrecHdr.Length >= 6) {
-          UINTN  Idx;
-
-          for (Idx = 0; Idx < 6; ++Idx) {
-            MacAddr->Addr[Idx] = MrecArea[sizeof (MULTIRECORD_HEADER) + Idx];
-          }
-
-          return EFI_SUCCESS;
-        } else {
-          DEBUG ((
-            EFI_D_ERROR,
-            "%a: MrecHdr.Length(%u) does not match MrecHdr.TypeId(%u)\n",
-            __FUNCTION__,
-            MrecHdr.Length,
-            MrecHdr.TypeId
-            ));
+        UINTN  Idx;
+        CONST UINT8  *MacData = MrecArea + sizeof (MULTIRECORD_HEADER);
+        if (((MacAddrIdx <= 2) && (MrecHdr.Length != 6)) ||
+            ((MacAddrIdx > 2) && (MrecHdr.Length < (MacAddrIdx - 2) * 6 + 1))) {
+          return EFI_INVALID_PARAMETER;
         }
+        if (MacAddrIdx > 2) {
+          if ((MacAddrIdx - 2) > MacData[0]) {
+            return EFI_INVALID_PARAMETER;
+          } else {
+            MacData = MacData + 1 + 6 * (MacAddrIdx - 3);
+          }
+        }
+
+        for (Idx = 0; Idx < 6; ++Idx) {
+          MacAddr->Addr[Idx] = MacData[Idx];
+        }
+
+        return EFI_SUCCESS;
       }
     }
 
