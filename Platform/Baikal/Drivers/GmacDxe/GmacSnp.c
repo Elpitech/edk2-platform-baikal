@@ -745,6 +745,9 @@ GmacSnpExitBootServices (
 {
   GMAC_INSTANCE *CONST  GmacInst = Context;
   GmacInst->Regs->DmaBusMode = DMA_BUSMODE_SWR;
+  if (GmacInst->ResetGpioPin == 0xE0) {
+    GmacInst->Regs->MacGpio |= MAC_GPIO_GPO;
+  }
 }
 
 STATIC
