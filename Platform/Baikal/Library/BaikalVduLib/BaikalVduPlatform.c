@@ -213,18 +213,16 @@ FdtGetPanelTimings(
     return Status;
   }
 
+  Node = 0;
   Status = FdtClient->FindNextCompatibleNode (FdtClient, "panel-lvds", Node, &NodePanel);
   if (EFI_ERROR (Status)) {
     return Status;
   }
   Status = FdtClient->GetNodeProperty (FdtClient, NodePanel, "status", &Prop, &PropSize);
-  if (EFI_ERROR (Status)) {
-    return Status;
+  if (Status == EFI_SUCCESS &&
+      AsciiStrCmp ((CONST CHAR8 *)Prop, "disabled") == 0) {
+    return EFI_NOT_FOUND;
   }
-  if (AsciiStrCmp ((CONST CHAR8 *)Prop, "disabled") == 0)
-    return Status;
-  else
-    FdtLvdsEnabled = TRUE;
 
   Status = FdtClient->GetNodeProperty (FdtClient, NodePanel, "data-mapping", &Prop, &PropSize);
   if (EFI_ERROR (Status) ||
