@@ -139,6 +139,8 @@ STATIC DISPLAY_MODE mDisplayModes[] = {
 
 DISPLAY_MODE FdtDisplayMode;
 
+STATIC UINT32 MaxMode;
+
 EFI_EDID_DISCOVERED_PROTOCOL  mEdidDiscovered = {
   0,
   NULL
@@ -420,21 +422,17 @@ LcdPlatformGetVram (
 UINT32
 LcdPlatformGetMaxMode (VOID)
 {
-  // The following line would correctly report the total number
-  // of graphics modes supported by the Baikal VDU.
-  // return (sizeof(mResolutions) / sizeof(DISPLAY_MODE)) - 1;
-
-  // However, on some platforms it is desirable to ignore some graphics modes.
-
-  // If a mode is set in FDT enable only that mode to prevent the boot
-  // loader (grub) or the kernel (efifb) from setting an unsupported mode
-  // (and locking up VDU)
-  FdtGetPanelTimings(&FdtDisplayMode);
-  if (FdtDisplayMode.LvdsPorts != 0) {
-      return 1;
-  } else {
-      return (FixedPcdGet32(PcdVduMaxMode));
+  if (MaxMode == 0) {
+    // If MaxMode is not yet initialized then check
+    // for lvds panel presence.
+    FdtGetPanelTimings(&FdtDisplayMode);
+    if (FdtDisplayMode.LvdsPorts != 0) {
+      MaxMode = 1;
+    } else {
+      MaxMode = sizeof(mDisplayModes) / sizeof(DISPLAY_MODE);
+    }
   }
+  return MaxMode;
 }
 
 EFI_STATUS
@@ -446,7 +444,7 @@ LcdPlatformSetMode (
 
   Status = EFI_SUCCESS;
 
-  if (ModeNumber >= LcdPlatformGetMaxMode ()) {
+  if (ModeNumber >= MaxMode) {
     ASSERT (FALSE);
     return EFI_INVALID_PARAMETER;
   }
@@ -482,7 +480,7 @@ LcdPlatformQueryMode (
 {
   ASSERT (Info != NULL);
 
-  if (ModeNumber >= LcdPlatformGetMaxMode ()) {
+  if (ModeNumber >= MaxMode) {
     ASSERT (FALSE);
     return EFI_INVALID_PARAMETER;
   }
@@ -521,7 +519,7 @@ LcdPlatformGetTimings (
   ASSERT (Horizontal != NULL);
   ASSERT (Vertical != NULL);
 
-  if (ModeNumber >= LcdPlatformGetMaxMode ()) {
+  if (ModeNumber >= MaxMode) {
     ASSERT (FALSE);
     return EFI_INVALID_PARAMETER;
   }
@@ -551,7 +549,7 @@ LcdPlatformGetHdmiPhySettings (
 
   ASSERT (PhySettings != NULL);
 
-  if (ModeNumber >= LcdPlatformGetMaxMode ()) {
+  if (ModeNumber >= MaxMode) {
     ASSERT (FALSE);
     return EFI_INVALID_PARAMETER;
   }
@@ -579,7 +577,7 @@ LcdPlatformGetBpp (
 {
   ASSERT (Bpp != NULL);
 
-  if (ModeNumber >= LcdPlatformGetMaxMode ()) {
+  if (ModeNumber >= MaxMode) {
     ASSERT (FALSE);
     return EFI_INVALID_PARAMETER;
   }
@@ -611,7 +609,7 @@ LcdPlatformGetLvdsInfo (
   ASSERT (LvdsPorts != NULL);
   ASSERT (LvdsOutBpp != NULL);
 
-  if (ModeNumber >= LcdPlatformGetMaxMode ()) {
+  if (ModeNumber >= MaxMode) {
     ASSERT (FALSE);
     return EFI_INVALID_PARAMETER;
   }
