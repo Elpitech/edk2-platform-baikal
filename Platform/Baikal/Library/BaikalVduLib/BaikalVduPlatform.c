@@ -311,7 +311,7 @@ LcdPlatformInitializeDisplay (
   // If a video mode is specified in FDT, find a mode with corresponding resolution
   // and make this mode the only available.
   if (FdtDisplayMode.LvdsPorts != 0) {
-    for (i = 0; i < LcdPlatformGetMaxMode(); i++) {
+    for (i = 0; i < sizeof(mDisplayModes) / sizeof(DISPLAY_MODE); i++) {
       // Override hard-coded timings by FDT timings
       // once a compatible video mode is found.
       if (FdtDisplayMode.Horizontal.Resolution == mDisplayModes[i].Horizontal.Resolution &&
