@@ -22,16 +22,20 @@
   EmbeddedPkg/EmbeddedPkg.dec
   MdePkg/MdePkg.dec
   Platform/Baikal/Baikal.dec
+  Platform/Baikal/Drivers/I2cDevicesDxe/I2cDevicesDxe.dec
 
 [LibraryClasses]
-  I2cLib
   TimeBaseLib
   UefiBootServicesTableLib
   UefiDriverEntryPoint
+ 
+[Guids]
+  gEepromI2cDeviceGuid  
 
 [Protocols]
-  gFdtClientProtocolGuid                        # PROTOCOL ALWAYS_CONSUMED
   gFruClientProtocolGuid                        # PROTOCOL ALWAYS_PRODUCED
+  gEfiI2cIoProtocolGuid
 
 [Depex]
-  gFdtClientProtocolGuid
+  gEfiI2cIoProtocolGuid
+

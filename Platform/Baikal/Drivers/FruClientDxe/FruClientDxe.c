@@ -8,7 +8,8 @@
 #include <Library/DebugLib.h>
 #include <Library/TimeBaseLib.h>
 #include <Library/UefiBootServicesTableLib.h>
-#include <Protocol/FdtClient.h>
+#include <Library/BaseMemoryLib.h>
+#include <Protocol/I2cIo.h>
 #include <Protocol/FruClient.h>
 #include "FruInternals.h"
 
@@ -147,9 +148,125 @@ FruReadTypLenEncProductData (
   IN   CONST UINTN   DstBufSize
   );
 
-STATIC UINTN   mFruAddr;
 STATIC UINT8  *mFruBuf;
 STATIC UINTN   mFruBufSize;
+
+typedef struct {
+  UINTN                           OperationCount;
+  EFI_I2C_OPERATION               Address;
+  EFI_I2C_OPERATION               Data;
+} EEPROM_I2C_READ_REQUEST;
+
+STATIC
+EFI_STATUS
+LocateI2cEepromDevice (
+  OUT EFI_I2C_IO_PROTOCOL     **Instance
+)
+{
+  EFI_I2C_IO_PROTOCOL *Dev;
+  EFI_STATUS          Status;
+  EFI_HANDLE          *HandleBuffer;
+  UINTN               HandleCount;
+  UINTN               Index;
+  BOOLEAN             Found;
+
+  if (Instance == NULL)
+  {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  //
+  // Retrieve all I2C device I/O handles in the handle database
+  //
+  Status = gBS->LocateHandleBuffer (ByProtocol,
+                                    &gEfiI2cIoProtocolGuid,
+                                    NULL,
+                                    &HandleCount,
+                                    &HandleBuffer);
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
+
+  //
+  // Locate protocol instance matching specific device
+  //
+  Found = FALSE;
+  for (Index = 0; (Index < HandleCount) && !Found; Index++) {
+    Status = gBS->OpenProtocol (
+                    HandleBuffer[Index],
+                    &gEfiI2cIoProtocolGuid,
+                    (VOID **) &Dev,
+                    gImageHandle,
+                    HandleBuffer[Index],
+                    EFI_OPEN_PROTOCOL_GET_PROTOCOL
+                    );
+    if (!EFI_ERROR (Status) &&
+        CompareGuid (Dev->DeviceGuid, &gEepromI2cDeviceGuid)) {
+      Found = TRUE;
+      *Instance = Dev;
+    }
+  }
+
+  //
+  // Free the handle array
+  //
+  gBS->FreePool (HandleBuffer);
+
+  return Found ? EFI_SUCCESS : EFI_NOT_FOUND;
+}
+
+/**
+  Read FRU data.
+
+  @param  Address               Memory address.
+  @param  Size                  Number of bytes to read.
+  @param  Data                  Pointer to the buffer to store the data in.
+
+  @retval EFI_SUCCESS           The operation completed successfully.
+  @retval EFI_DEVICE_ERROR      The data could not be retrieved from memory
+                                due to hardware error.
+**/
+STATIC
+EFI_STATUS
+I2cReadFruData (
+  IN  UINT16                      Address,
+  IN  UINT16                      Size,
+  OUT UINT8                       *Data
+  )
+{
+  EFI_I2C_IO_PROTOCOL     *I2cIo;
+  EEPROM_I2C_READ_REQUEST  Request;
+  EFI_STATUS               Status;
+  UINT8                    AddressBuffer[2];
+
+  Status = LocateI2cEepromDevice (&I2cIo);
+  if (!EFI_ERROR (Status)) {
+    AddressBuffer[0] = (Address >> 8) & 0xFF;
+    AddressBuffer[1] = Address & 0xFF;
+
+    Request.OperationCount = 2;
+    Request.Address.Flags = 0;
+    Request.Address.LengthInBytes = sizeof (AddressBuffer);
+    Request.Address.Buffer = AddressBuffer;
+    Request.Data.Flags = I2C_FLAG_READ;
+    Request.Data.LengthInBytes = Size;
+    Request.Data.Buffer = Data;
+    Status = I2cIo->QueueRequest (I2cIo, 0,
+                                  NULL,
+                                  (EFI_I2C_REQUEST_PACKET *)&Request,
+                                  NULL);
+    if (EFI_ERROR (Status)) {
+      if (Status != EFI_TIMEOUT) {
+        DEBUG ((EFI_D_ERROR, "I2cEeprom: read @%04X failed: %r\r\n",
+                Address, Status));
+      }
+      Status = EFI_DEVICE_ERROR;
+    }
+  } else {
+    DEBUG ((EFI_D_ERROR, "%a: unable to locate FRU EEPROM device, Status: %r\n", __FUNCTION__, Status));
+  }
+  return Status;
+}
 
 EFI_STATUS
 EFIAPI
@@ -158,12 +275,6 @@ FruClientDxeInitialize (
   IN  EFI_SYSTEM_TABLE  *SystemTable
   )
 {
-  FDT_CLIENT_PROTOCOL  *FdtClient;
-  INT32                 FdtNode;
-  CONST UINT16          FruMemAddr = 0;
-  INTN                  I2cRxedSize;
-  CONST VOID           *Prop;
-  UINT32                PropSize;
   EFI_STATUS            Status;
 
   STATIC FRU_CLIENT_PROTOCOL  mFruClientProtocol = {
@@ -183,29 +294,6 @@ FruClientDxeInitialize (
     FruClientGetMultirecordMacAddr
   };
 
-  Status = gBS->LocateProtocol (&gFdtClientProtocolGuid, NULL, (VOID **) &FdtClient);
-  ASSERT_EFI_ERROR (Status);
-  if (EFI_ERROR (Status)) {
-    DEBUG ((
-      EFI_D_ERROR,
-      "%a: unable to locate FdtClientProtocol, Status: %r\n",
-      __FUNCTION__,
-      Status
-      ));
-    return Status;
-  }
-
-  Status = FdtClient->FindCompatibleNode (FdtClient, "atmel,24c32", &FdtNode);
-  if (Status == EFI_SUCCESS) {
-    Status = FdtClient->GetNodeProperty (FdtClient, FdtNode, "reg", &Prop, &PropSize);
-    if (Status == EFI_SUCCESS && PropSize == 4) {
-      mFruAddr = SwapBytes32 (((CONST UINT32 *) Prop)[0]);
-      if (mFruAddr < 0x50 || mFruAddr > 0x57) {
-        mFruAddr = 0;
-      }
-    }
-  }
-
   Status = gBS->AllocatePool (EfiBootServicesData, EEPROM_SIZE, (VOID **) &mFruBuf);
   if (EFI_ERROR (Status)) {
     DEBUG ((
@@ -217,19 +305,11 @@ FruClientDxeInitialize (
     return Status;
   }
 
-  if (mFruAddr) {
-    I2cRxedSize = I2cTxRx (
-                    EEPROM_I2C_BUS,
-                    mFruAddr,
-                    (UINT8 *) &FruMemAddr,
-                    sizeof (FruMemAddr),
-                    mFruBuf,
-                    EEPROM_SIZE
-                    );
-
-    if (I2cRxedSize == EEPROM_SIZE) {
-      mFruBufSize = I2cRxedSize;
-    }
+  Status = I2cReadFruData(0, EEPROM_SIZE, (UINT8 *) mFruBuf);
+  if (EFI_ERROR(Status)) {
+    return Status;
+  } else {
+    mFruBufSize = EEPROM_SIZE;
   }
 
   Status = gBS->InstallProtocolInterface (
