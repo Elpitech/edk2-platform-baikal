@@ -263,6 +263,7 @@ FdtGetPanelTimings(
       return Status;        // this is illegal
   }
   FdtDisplayMode->LvdsPorts = 1;
+  FdtLvdsEnabled = TRUE;
   Status = FdtClient->FindNextSubnode (FdtClient, "endpoint@1", NodePort, &Node);
   if (EFI_ERROR (Status)) // we have just one endpoint (endpoint or endpoint@0)
     return EFI_SUCCESS;   // this is legal
@@ -273,6 +274,7 @@ FdtGetPanelTimings(
   Status = FdtClient->FindNextSubnode (FdtClient, "endpoint@3", NodePort, &Node);
   if (EFI_ERROR (Status)) {          // we have three endpoints (@0, @1 and @2)
     FdtDisplayMode->LvdsPorts = 0; // this is illegal
+    FdtLvdsEnabled = FALSE;
     return Status;
   }
   FdtDisplayMode->LvdsPorts = 4;
