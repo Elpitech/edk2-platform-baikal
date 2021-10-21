@@ -544,7 +544,7 @@ StartRequest (
   return Status;
 }
 
-#if defined (BE_MITX) && BOARD_VER == 1
+#if defined (BAIKAL_MITX) && BOARD_VER == 1
 STATIC
 EFI_STATUS
 I2cArbLockBus(
@@ -613,7 +613,7 @@ BaikalI2cInit (
 
   I2cInitHw ((I2C_REGS *)(I2c->Dev->Resources[0].AddrRangeMin));
 
-#if defined (BE_MITX) && BOARD_VER == 1
+#if defined (BAIKAL_MITX) && BOARD_VER == 1
   I2cArbLockBus(I2c->Dev->Resources[0].AddrRangeMin);
 #endif
 
