@@ -77,6 +77,7 @@ GmacDxeDriverEntry (
     return Status;
   }
 
+#ifndef BAIKAL_MITX
   FdtStatus = FdtClient->FindNextCompatibleNode (FdtClient, "baikal,baikal-m", -1, &Node);
   if (!EFI_ERROR (FdtStatus)) {
     FdtStatus = FdtClient->GetNodeProperty (FdtClient, Node, "model", &Prop, NULL);
@@ -132,6 +133,9 @@ GmacDxeDriverEntry (
       }
     }
   }
+#else
+  Crc32 = 0x706c45;
+#endif
 
   for (Node = 0;;) {
     FdtStatus = FdtClient->FindNextCompatibleNode (FdtClient, "be,dwmac", Node, &Node);
