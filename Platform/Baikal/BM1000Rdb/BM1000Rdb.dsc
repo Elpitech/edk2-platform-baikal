@@ -293,7 +293,9 @@
   MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
 
   # SD
+!if $(BAIKAL_MITX) == FALSE
   Platform/Baikal/Drivers/SdBlockDxe/SdBlock.inf
+!endif
 
   # USB
   Platform/Baikal/Drivers/PciEmulation/PciEmulationXhci.inf
@@ -331,6 +333,10 @@
 !if $(BUILD_UEFI_APPS) == TRUE
   Platform/Baikal/Application/SpiFlash/SpiFlash.inf
   Platform/Baikal/Application/SpiFlashImage/SpiFlashImage.inf
+!endif
+
+!if $(BAIKAL_MITX) == TRUE
+  Platform/Baikal/Drivers/BoardConfigDxe/BoardConfigDxe.inf
 !endif
 
 [PcdsFeatureFlag.common]

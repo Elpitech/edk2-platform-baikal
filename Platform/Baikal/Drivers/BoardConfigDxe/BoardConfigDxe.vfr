@@ -1,0 +1,51 @@
+#include "BoardConfigDxeDataStruc.h"
+formset
+  guid     = BOARD_CONFIG_FORMSET_GUID,
+  title    = STRING_TOKEN(STR_BCFG_FORM_SET_TITLE),
+  help     = STRING_TOKEN(STR_BCFG_FORM_SET_HELP),
+  classguid = EFI_HII_PLATFORM_SETUP_FORMSET_GUID,
+
+  //
+  // Define a Buffer Storage (EFI_IFR_VARSTORE)
+  //
+    varstore BOARD_CONFIG_DATA, // This is the data structure type
+    //varid = CONFIGURATION_VARSTORE_ID,      // Optional VarStore ID
+    name  = BoardConfig,                    // Define referenced name in vfr
+    guid  = BOARD_CONFIG_FORMSET_GUID;   // GUID of this buffer storage
+    
+    form formid = 1, title = STRING_TOKEN(STR_BCFG_FORM1_TITLE);
+    subtitle text = STRING_TOKEN(STR_SUBTITLE_TEXT);
+
+//  subtitle text = STRING_TOKEN(STR_SUBTITLE_TEXT2_LVDS);
+    subtitle text = STRING_TOKEN(STR_EMPTY_STRING);
+
+  //
+  // Define a checkbox to enable / disable the device
+  //
+    checkbox varid   = BoardConfig.LvdsEnable,
+                 prompt   = STRING_TOKEN(STR_CHECK_BOX_PROMPT_LVDS),
+                 help     = STRING_TOKEN(STR_CHECK_BOX_HELP),
+                 //
+                 // CHECKBOX_DEFAULT indicate this checkbox is marked
+                 // with EFI_IFR_CHECKBOX_DEFAULT
+                 // 
+                 flags    = CHECKBOX_DEFAULT ,
+                 key      = 0,
+                 default  = 1,
+    endcheckbox;     
+
+    checkbox varid   = BoardConfig.MmcEnable,
+                 prompt   = STRING_TOKEN(STR_CHECK_BOX_PROMPT_MMC),
+                 help     = STRING_TOKEN(STR_CHECK_BOX_HELP),
+                 //
+                 // CHECKBOX_DEFAULT indicate this checkbox is marked
+                 // with EFI_IFR_CHECKBOX_DEFAULT
+                 // 
+                 flags    = CHECKBOX_DEFAULT ,
+                 key      = 1,
+                 //default  = 1,
+    endcheckbox;     
+
+    endform;
+
+endformset;

@@ -1,0 +1,12 @@
+#langdef en "English"
+
+#string STR_BCFG_FORM_SET_TITLE        #language en  "Board configuration"
+#string STR_BCFG_FORM_SET_HELP         #language en  "Choose board configuration parameters"
+#string STR_BCFG_FORM1_TITLE           #language en  "OnBoard devices configuration"
+
+#string STR_SUBTITLE_TEXT              #language en "Enable/disable onboard devices"
+#string STR_CHECK_BOX_PROMPT_LVDS      #language en "Enable LVDS output"
+#string STR_CHECK_BOX_PROMPT_MMC       #language en "Enable MMC controller"
+
+#string STR_CHECK_BOX_HELP             #language en "Check this box to enable controller."  
+#string STR_EMPTY_STRING               #language en ""
