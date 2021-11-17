@@ -333,6 +333,30 @@ FindMemoryNodeReg (
 STATIC
 EFI_STATUS
 EFIAPI
+FindNodeByAlias (
+  IN  FDT_CLIENT_PROTOCOL     *This,
+  IN  CONST CHAR8             *Alias,
+  OUT INT32                   *Node
+  )
+{
+  CONST CHAR8                 *Path;
+  INT32                        Offset;
+
+  Path = fdt_get_alias(mDeviceTreeBase, Alias);
+  if (!Path)
+    return EFI_NOT_FOUND;
+  Offset = fdt_path_offset(mDeviceTreeBase, Path);
+  if (Offset > 0) {
+    *Node = Offset;
+    return EFI_SUCCESS;
+  } else {
+    return EFI_NOT_FOUND;
+  }
+}
+
+STATIC
+EFI_STATUS
+EFIAPI
 GetOrInsertChosenNode (
   IN  FDT_CLIENT_PROTOCOL     *This,
   OUT INT32                   *Node
@@ -368,6 +392,7 @@ STATIC FDT_CLIENT_PROTOCOL mFdtClientProtocol = {
   FindCompatibleNodeReg,
   FindMemoryNodeReg,
   FindNextMemoryNodeReg,
+  FindNodeByAlias,
   GetOrInsertChosenNode
 };
 
