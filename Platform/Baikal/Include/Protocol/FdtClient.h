@@ -19,7 +19,7 @@
 #define __FDT_CLIENT_H__
 
 #define FDT_CLIENT_PROTOCOL_GUID { \
-  0xE11FACA0, 0x4710, 0x4C8E, {0xA7, 0xA2, 0x01, 0xBA, 0xA2, 0x59, 0x1B, 0x4C} \
+  0xB6D222D0, 0x9856, 0xBB4A, {0x92, 0x81, 0x9E, 0xCB, 0x4E, 0xFA, 0x20, 0xAD} \
   }
 
 //
@@ -126,6 +126,14 @@ EFI_STATUS
 
 typedef
 EFI_STATUS
+(EFIAPI *FDT_CLIENT_FIND_NODE_BY_ALIAS) (
+  IN  FDT_CLIENT_PROTOCOL     *This,
+  IN  CONST CHAR8             *AliasString,
+  OUT INT32                   *Node
+  );
+
+typedef
+EFI_STATUS
 (EFIAPI *FDT_CLIENT_GET_OR_INSERT_CHOSEN_NODE) (
   IN  FDT_CLIENT_PROTOCOL     *This,
   OUT INT32                   *Node
@@ -144,6 +152,7 @@ struct _FDT_CLIENT_PROTOCOL {
 
   FDT_CLIENT_FIND_MEMORY_NODE_REG          FindMemoryNodeReg;
   FDT_CLIENT_FIND_NEXT_MEMORY_NODE_REG     FindNextMemoryNodeReg;
+  FDT_CLIENT_FIND_NODE_BY_ALIAS            FindNodeByAlias;
 
   FDT_CLIENT_GET_OR_INSERT_CHOSEN_NODE     GetOrInsertChosenNode;
 };

@@ -1,0 +1,55 @@
+[Defines]
+  INF_VERSION               = 0x00010005
+  BASE_NAME                 = BoardConfigDxe
+  FILE_GUID                 = cc5ebb4f-f562-11e7-9211-f48c5049e3a4
+  MODULE_TYPE               = UEFI_DRIVER
+  VERSION_STRING            = 0.01
+  ENTRY_POINT               = BoardConfigDriverEntryPoint
+  UNLOAD_IMAGE              = BoardConfigUnload
+  UEFI_HII_RESOURCE_SECTION = TRUE
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  Platform/Baikal/Baikal.dec
+
+[Sources]
+  BoardConfigDxeDataStruc.h
+  BoardConfigDxe.h
+  BoardConfigDxe.c
+  BoardConfigDxe.uni
+  BoardConfigDxe.vfr
+  ComponentName.c
+  ComponentName.h
+  HiiConfigAccess.c
+  HiiConfigAccess.h
+ 
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  BaseLib
+  UefiLib
+  DevicePathLib
+  DebugLib
+
+[Protocols]
+  gEfiDriverBindingProtocolGuid
+  gEfiPciIoProtocolGuid
+  gEfiDriverSupportedEfiVersionProtocolGuid
+  gEfiHiiPackageListProtocolGuid
+  gEfiHiiDatabaseProtocolGuid
+  gEfiComponentName2ProtocolGuid
+  gEfiComponentNameProtocolGuid
+  gEfiHiiConfigAccessProtocolGuid
+  gEfiHiiStringProtocolGuid                   ## CONSUMES
+  gEfiHiiConfigRoutingProtocolGuid            ## CONSUMES
+  gEfiFormBrowser2ProtocolGuid                ## CONSUMES
+  gEfiHiiDatabaseProtocolGuid                 ## CONSUMES
+  gFdtClientProtocolGuid
+
+[Guids]
+
+[Depex]
+  gFdtClientProtocolGuid

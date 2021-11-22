@@ -213,7 +213,9 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
 
   # SD
+!if $(BAIKAL_MITX) == FALSE
   INF Platform/Baikal/Drivers/SdBlockDxe/SdBlock.inf
+!endif
 
   # USB
 !if ($(BAIKAL_QEMU_M) == FALSE) AND ($(BAIKAL_QEMU_S) == FALSE)
@@ -228,6 +230,10 @@ READ_LOCK_STATUS   = TRUE
   # UEFI application (Shell Embedded Boot Loader)
   INF ShellPkg/Application/Shell/Shell.inf
   INF ShellPkg/DynamicCommand/TftpDynamicCommand/TftpDynamicCommand.inf
+
+!if $(BAIKAL_MITX) == TRUE
+  INF Platform/Baikal/Drivers/BoardConfigDxe/BoardConfigDxe.inf
+!endif
 
 [FV.FVMAIN_COMPACT]
 FvAlignment        = 16
