@@ -301,6 +301,7 @@ BoardConfigDriverEntryPoint (
       DEBUG((EFI_D_ERROR, "Can't get vdu-lvds status (%r)\n", Status));
       return Status;
     };
+    mode = 0; // disabled by default
         // zero out buffer
     ZeroMem (&PrivateData->Configuration, sizeof (BOARD_CONFIG_DATA));
     PrivateData->Configuration.LvdsEnable = mode;
