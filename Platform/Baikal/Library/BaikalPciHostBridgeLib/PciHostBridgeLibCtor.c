@@ -634,7 +634,7 @@ BaikalPciHostBridgeLibCtor (
       // encoding the bus.
       //
       0,
-      SIZE_64KB,
+      SIZE_1MB + SIZE_64KB,
       BM1000_PCIE_PF0_PORT_LOGIC_IATU_REGION_CTRL_1_OFF_OUTBOUND_0_TYPE_CFG0,
       BM1000_PCIE_PF0_PORT_LOGIC_IATU_REGION_CTRL_2_OFF_OUTBOUND_0_CFG_SHIFT_MODE
       );
@@ -643,7 +643,7 @@ BaikalPciHostBridgeLibCtor (
     BaikalPciHostBridgeLibCfgWindow (
       mPcieCdmBases[PcieIdx],
       2,
-      mPcieCfgBases[PcieIdx],
+      mPcieCfgBases[PcieIdx] + SIZE_1MB * 2,
       0,
       mPcieBusMaxs[PcieIdx] * SIZE_1MB,
       BM1000_PCIE_PF0_PORT_LOGIC_IATU_REGION_CTRL_1_OFF_OUTBOUND_0_TYPE_CFG1,

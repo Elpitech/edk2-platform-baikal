@@ -55,7 +55,7 @@ PciSegmentLibGetConfigBase (
     if (Device == 0) {
       if (Function == 0 || (mPcieCfg0FilteringWorks & (1 << Segment))) {
         if (BaikalPciHostBridgeLibLink(Segment)) {
-          return mPcieCfgBases[Segment] + (Function << 12);
+          return mPcieCfgBases[Segment] + (1 << 20) + (Function << 12);
         } else {
           return MAX_UINT64;
         }
