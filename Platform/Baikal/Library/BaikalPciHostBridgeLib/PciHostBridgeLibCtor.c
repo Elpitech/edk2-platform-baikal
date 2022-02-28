@@ -720,8 +720,27 @@ BaikalPciHostBridgeLibCtor (
               BM1000_PCIE_PF0_PCIE_CAP_LINK_CONTROL_LINK_STATUS_REG_NEGO_LINK_WIDTH_SHIFT
             ));
 #endif
-          if (MmioRead32 (mPcieCfgBases[PcieIdx]) != 0xFFFFFFFF &&
-              MmioRead32 (mPcieCfgBases[PcieIdx] + 0x8000) == 0xFFFFFFFF) {
+          // Wait until device starts responding to cfg requests
+          while (MmioRead32 (mPcieCfgBases[PcieIdx] + SIZE_1MB) == 0) {
+            MmioWrite32(mPcieCfgBases[PcieIdx] + SIZE_1MB, 0xffffffff);
+            gBS->Stall (10000);
+            if (((GetTimeInNanoSecond (GetPerformanceCounter ()) - TimeStart) / 1000000) > 1000) {
+              break;
+            }
+          }
+          DEBUG((EFI_D_INFO,
+            "PcieRoot(0x%x): [%dms]: dev_id at 1:0.0 - %x, dev_id at 1:1.0 - %x\n",
+            PcieIdx,
+            (GetTimeInNanoSecond (GetPerformanceCounter ()) - TimeStart) / 1000000,
+            MmioRead32 (mPcieCfgBases[PcieIdx] + SIZE_1MB),
+            MmioRead32 (mPcieCfgBases[PcieIdx] + SIZE_1MB + 0x8000)));
+          DEBUG((EFI_D_INFO,
+            "PcieRoot(0x%x): dev_id at 0:0.0 - %x, dev_id at 0:1.0 - %x\n",
+            PcieIdx,
+            MmioRead32 (mPcieCfgBases[PcieIdx]),
+            MmioRead32 (mPcieCfgBases[PcieIdx] + 0x8000)));
+          if (MmioRead32 (mPcieCfgBases[PcieIdx] + SIZE_1MB) != 0xFFFFFFFF &&
+              MmioRead32 (mPcieCfgBases[PcieIdx] + SIZE_1MB + 0x8000) == 0xFFFFFFFF) {
             //
             // Device appears to filter CFG0 requests, so the 64 KiB granule for the iATU
             // isn't a problem. We don't have to ignore fn > 0 or shift MCFG by 0x8000.
