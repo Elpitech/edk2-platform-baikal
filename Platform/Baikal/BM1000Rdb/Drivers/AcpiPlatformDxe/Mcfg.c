@@ -45,10 +45,12 @@ STATIC BAIKAL_ACPI_MCFG  Mcfg = {
   },
   {
     BAIKAL_MCFG_TABLE_ENTRY(BAIKAL_ACPI_PCIE0_SEGMENT, BM1000_PCIE0_CFG_BASE),
-#ifdef BAIKAL_DBM
+#ifdef BAIKAL_ACPI_PCIE1_SEGMENT
     BAIKAL_MCFG_TABLE_ENTRY(BAIKAL_ACPI_PCIE1_SEGMENT, BM1000_PCIE1_CFG_BASE),
 #endif
+#ifdef BAIKAL_ACPI_PCIE2_SEGMENT
     BAIKAL_MCFG_TABLE_ENTRY(BAIKAL_ACPI_PCIE2_SEGMENT, BM1000_PCIE2_CFG_BASE)
+#endif
   }
 };
 #pragma pack()
@@ -74,7 +76,7 @@ McfgInit (
 
     Mcfg.Table[BAIKAL_ACPI_PCIE0_SEGMENT].StartBusNumber = 0;
     Mcfg.Table[BAIKAL_ACPI_PCIE0_SEGMENT].EndBusNumber = 0;
-#ifdef BAIKAL_DBM
+#ifdef BAIKAL_ACPI_PCIE1_SEGMENT
     if ((PcdGet32 (PcdPcieCfg0FilteringWorks) & (1 << BM1000_PCIE1_IDX)) == 0) {
       Mcfg.Table[BAIKAL_ACPI_PCIE1_SEGMENT].BaseAddress += 0x8000;
     }
@@ -82,12 +84,14 @@ McfgInit (
     Mcfg.Table[BAIKAL_ACPI_PCIE1_SEGMENT].StartBusNumber = 0;
     Mcfg.Table[BAIKAL_ACPI_PCIE1_SEGMENT].EndBusNumber = 0;
 #endif
+#ifdef BAIKAL_ACPI_PCIE2_SEGMENT
     if ((PcdGet32 (PcdPcieCfg0FilteringWorks) & (1 << BM1000_PCIE2_IDX)) == 0) {
       Mcfg.Table[BAIKAL_ACPI_PCIE2_SEGMENT].BaseAddress += 0x8000;
     }
 
     Mcfg.Table[BAIKAL_ACPI_PCIE2_SEGMENT].StartBusNumber = 0;
     Mcfg.Table[BAIKAL_ACPI_PCIE2_SEGMENT].EndBusNumber = 0;
+#endif
     *Table = (EFI_ACPI_DESCRIPTION_HEADER *) &Mcfg;
     return EFI_SUCCESS;
   }

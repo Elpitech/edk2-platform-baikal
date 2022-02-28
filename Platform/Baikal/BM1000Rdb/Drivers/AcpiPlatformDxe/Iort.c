@@ -113,10 +113,12 @@ STATIC BAIKAL_ACPI_IORT  Iort = {
   0,
   {
     BAIKAL_IORT_ROOT_COMPLEX(BAIKAL_ACPI_PCIE0_SEGMENT),
-#ifdef BAIKAL_DBM
+#ifdef BAIKAL_ACPI_PCIE1_SEGMENT
     BAIKAL_IORT_ROOT_COMPLEX(BAIKAL_ACPI_PCIE1_SEGMENT),
 #endif
+#ifdef BAIKAL_ACPI_PCIE2_SEGMENT
     BAIKAL_IORT_ROOT_COMPLEX(BAIKAL_ACPI_PCIE2_SEGMENT)
+#endif
   }
 };
 #pragma pack()
@@ -155,18 +157,20 @@ IortInit (
     }
 
     Iort.Rc[BAIKAL_ACPI_PCIE0_SEGMENT].Map.NumIds = 0x7;
-#ifdef BAIKAL_DBM
+#ifdef BAIKAL_ACPI_PCIE1_SEGMENT
     if ((PcdGet32 (PcdPcieCfg0FilteringWorks) & (1 << BM1000_PCIE1_IDX)) == 0) {
       Iort.Rc[BAIKAL_ACPI_PCIE1_SEGMENT].Map.OutputBase += 0x8;
     }
 
     Iort.Rc[BAIKAL_ACPI_PCIE1_SEGMENT].Map.NumIds = 0x7;
 #endif
+#ifdef BAIKAL_ACPI_PCIE2_SEGMENT
     if ((PcdGet32 (PcdPcieCfg0FilteringWorks) & (1 << BM1000_PCIE2_IDX)) == 0) {
       Iort.Rc[BAIKAL_ACPI_PCIE2_SEGMENT].Map.OutputBase += 0x8;
     }
 
     Iort.Rc[BAIKAL_ACPI_PCIE2_SEGMENT].Map.NumIds = 0x7;
+#endif
     *Table = (EFI_ACPI_DESCRIPTION_HEADER *) &Iort;
     return EFI_SUCCESS;
   }

@@ -68,7 +68,7 @@ DefinitionBlock (__FILE__, "SSDT", 2, "BAIKAL", "SSDTPCI0", 1) {
       NATIVE_PCIE_OSC
     }
 
-#ifdef BAIKAL_DBM
+#ifdef BAIKAL_ACPI_PCIE1_SEGMENT
     // PCIe1 (x4 #1)
     Device (PCI1) {
       Name (_HID, EISAID ("PNP0A08"))
@@ -114,6 +114,7 @@ DefinitionBlock (__FILE__, "SSDT", 2, "BAIKAL", "SSDTPCI0", 1) {
     }
 #endif
 
+#ifdef BAIKAL_ACPI_PCIE2_SEGMENT
     // PCIe2 (x8)
     Device (PCI2) {
       Name (_HID, EISAID ("PNP0A08"))
@@ -163,5 +164,6 @@ DefinitionBlock (__FILE__, "SSDT", 2, "BAIKAL", "SSDTPCI0", 1) {
 
       NATIVE_PCIE_OSC
     }
+#endif
   }
 }

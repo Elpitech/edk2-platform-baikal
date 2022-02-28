@@ -50,17 +50,19 @@
     Method (_CRS, 0, Serialized) {
       Name (RBUF, ResourceTemplate () {
         CONS_MEM_BUF(01)
-#ifdef BAIKAL_DBM
+#ifdef BAIKAL_ACPI_PCIE1_SEGMENT
         CONS_MEM_BUF(02)
 #endif
         CONS_MEM_BUF(03)
       })
 
       RES_BUF_SET(01, BM1000_PCIE0_CFG_BASE, 0xFF00000, 0)
-#ifdef BAIKAL_DBM
+#ifdef BAIKAL_ACPI_PCIE1_SEGMENT
       RES_BUF_SET(02, BM1000_PCIE1_CFG_BASE, 0xFF00000, 0)
 #endif
+#ifdef BAIKAL_ACPI_PCIE2_SEGMENT
       RES_BUF_SET(03, BM1000_PCIE2_CFG_BASE, 0xFF00000, 0)
+#endif
 
       Return (RBUF)
     }
@@ -120,7 +122,7 @@
 #endif // PCIE_NATIVE
   }
 
-#ifdef BAIKAL_DBM
+#ifdef BAIKAL_ACPI_PCIE1_SEGMENT
   // PCIe1 (x4 #1)
   Device (PCI1) {
     Name (_HID, EISAID ("PNP0A08"))
@@ -174,6 +176,7 @@
   }
 #endif
 
+#ifdef BAIKAL_ACPI_PCIE2_SEGMENT
   // PCIe2 (x8)
   Device (PCI2) {
     Name (_HID, EISAID ("PNP0A08"))
@@ -226,4 +229,5 @@
     NATIVE_PCIE_OSC
 #endif // PCIE_NATIVE
   }
+#endif
 }
