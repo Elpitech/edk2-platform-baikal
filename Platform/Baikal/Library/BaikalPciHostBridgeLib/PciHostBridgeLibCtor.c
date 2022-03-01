@@ -611,6 +611,23 @@ BaikalPciHostBridgeLibCtor (
             );
         }
       }
+    } else if(PcdGet32 (PcdAcpiMsiMode)  == ACPI_MSI_ITS) {
+      if (PcieIdx == BM1000_PCIE0_IDX) {
+        MmioOr32 (
+           BM1000_PCIE_GPR_MSI_TRANS_CTL2_REG,
+           BM1000_PCIE_GPR_MSI_TRANS_CTL2_PCIE0_MSI_TRANS_EN
+          );
+      } else if (PcieIdx == BM1000_PCIE1_IDX) {
+        MmioOr32 (
+           BM1000_PCIE_GPR_MSI_TRANS_CTL2_REG,
+           BM1000_PCIE_GPR_MSI_TRANS_CTL2_PCIE1_MSI_TRANS_EN
+          );
+      } else if (PcieIdx == BM1000_PCIE2_IDX) {
+        MmioOr32 (
+           BM1000_PCIE_GPR_MSI_TRANS_CTL2_REG,
+           BM1000_PCIE_GPR_MSI_TRANS_CTL2_PCIE2_MSI_TRANS_EN
+          );
+      }
     }
 
     // Region 0: MMIO32 range
