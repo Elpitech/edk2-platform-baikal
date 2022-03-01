@@ -119,7 +119,6 @@ GmacDxeDriverEntry (
     }
 
     if (!FdtClient->IsNodeEnabled (FdtClient, Node)) {
-      ++DevIdx;
       continue;
     }
 
@@ -168,7 +167,7 @@ GmacDxeDriverEntry (
         EFI_MAC_ADDRESS  FruMacAddr;
 
         gBS->SetMem (&FruMacAddr, sizeof (FruMacAddr), 0);
-        Status = FruClient->GetMultirecordMacAddr (GmacRegs == (VOID *) 0x30240000 ? 0 : 1, &FruMacAddr);
+        Status = FruClient->GetMultirecordMacAddr (DevIdx, &FruMacAddr);
         if (Status == EFI_SUCCESS && IsValidMacAddr (&FruMacAddr)) {
             gBS->CopyMem (&MacAddr, &FruMacAddr, sizeof (EFI_MAC_ADDRESS));
         } else {
